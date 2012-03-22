@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -cp .:$MARS_HOME/lib/*:$MARS_HOME/templates co.diji.cloud9.utils.mars.Mars $@
