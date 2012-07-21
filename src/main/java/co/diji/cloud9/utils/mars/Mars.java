@@ -74,6 +74,9 @@ public final class Mars {
             if (command.equals("push")) {
                 try {
                     List<File> files = Mars.getFileListing(appRoot);
+                    for (File f : files) {
+                        System.out.println(f.getAbsolutePath());
+                    }
                     push(files);
                 } catch (Exception e) {}
             
@@ -214,6 +217,7 @@ public final class Mars {
                                         .method("PUT")
                                         .path(resourcePath)
                                         .body(payload.toString())
+                                        .contentType("application/json")
                                         .build();
             request.execute();
 
