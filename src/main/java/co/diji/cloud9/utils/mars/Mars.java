@@ -19,6 +19,8 @@ import java.util.Map;
 
 public final class Mars {
 
+    private static final String[] VALID_TYPES = {"conf", "html", "css", "images", "js", "controllers"};
+    
     /**
      * Application entry point
      */
@@ -373,7 +375,18 @@ public final class Mars {
                 List<File> deeperList = getFileListingNoSort(file);
                 result.addAll(deeperList);
             } else {
-                result.add(file); // only add files
+                String type = file.getParent();
+                if (type == null || type.length() < 3) {
+                    type = "";
+                } else {
+                    type = type.substring(2);
+                }
+                
+                if (Arrays.asList(VALID_TYPES).contains(type)) {
+                    result.add(file); // only add files of valid type
+                } else {
+                    System.out.println("Skipping invalid file: " + file);
+                }
             }
         }
         return result;
