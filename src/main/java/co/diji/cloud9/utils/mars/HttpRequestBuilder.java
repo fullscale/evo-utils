@@ -11,6 +11,7 @@ public class HttpRequestBuilder {
     private String body = "";
     private String host = "localhost"; 
     private String port = "2600";
+    private String apiPart = "v2";
     private String contentType = "";
     private int timeout = 10000;
     private boolean zip = false;
@@ -30,7 +31,8 @@ public class HttpRequestBuilder {
             path, 
             body, 
             host, 
-            port, 
+            port,
+            apiPart,
             contentType,
             timeout,
             zip
@@ -62,6 +64,11 @@ public class HttpRequestBuilder {
         return this;
     }
 
+    public HttpRequestBuilder apiPart (String apiPart) {
+        this.apiPart = apiPart;
+        return this;
+    }
+    
     public HttpRequestBuilder contentType (String contentType) {
         this.contentType = contentType;
         return this;

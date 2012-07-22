@@ -121,6 +121,7 @@ public final class Mars {
                                     .method("GET")
                                     .path(app)
                                     .zip(true)
+                                    .apiPart("v1")
                                     .build();
 
         Map<String, String> response = request.execute();

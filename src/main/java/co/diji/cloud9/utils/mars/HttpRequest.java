@@ -27,6 +27,7 @@ public class HttpRequest {
     private String body;
     private String host;
     private String port;
+    private String apiPart;
     private String contentType;
     private int timeout;
     private boolean zip;
@@ -44,6 +45,7 @@ public class HttpRequest {
         String body, 
         String host, 
         String port,
+        String apiPart,
         String contentType,
         int timeout,
         boolean zip
@@ -53,6 +55,7 @@ public class HttpRequest {
         this.body = body;
         this.host = host;
         this.port = port;
+        this.apiPart = apiPart;
         this.contentType = contentType;
         this.timeout = timeout;
         this.zip = zip;
@@ -65,7 +68,7 @@ public class HttpRequest {
         try {
 
             // PUT /v1/apps/{app}/{dir}/{id}
-            serverAddress = new URL("http://" + host + ":" + port + "/v2/apps/" + path);
+            serverAddress = new URL("http://" + host + ":" + port + "/" + apiPart + "/apps/" + path);
 
             connection = (HttpURLConnection)serverAddress.openConnection();
             connection.setRequestMethod(method);
