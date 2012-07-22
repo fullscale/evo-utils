@@ -15,6 +15,7 @@ public class HttpRequestBuilder {
     private String contentType = "";
     private int timeout = 10000;
     private boolean zip = false;
+    private boolean base64 = false;
 
     public HttpRequestBuilder() {
         Properties properties = new Properties();
@@ -35,7 +36,8 @@ public class HttpRequestBuilder {
             apiPart,
             contentType,
             timeout,
-            zip
+            zip,
+            base64
         );
     }
 
@@ -81,6 +83,11 @@ public class HttpRequestBuilder {
 
     public HttpRequestBuilder zip (boolean zip) {
         this.zip = zip;
+        return this;
+    }
+    
+    public HttpRequestBuilder base64 (boolean base64) {
+        this.base64 = base64;
         return this;
     }
 }

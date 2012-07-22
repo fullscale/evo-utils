@@ -13,7 +13,10 @@ import java.io.FileWriter;
 import java.util.*;
 import java.io.*;
 import java.lang.StringBuilder;
+
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import java.util.Map;
 
@@ -136,10 +139,15 @@ public final class Mars {
                 dir.mkdir();
             }
 
-            FileWriter localResource = new FileWriter(app + File.separator + file);
-            localResource.write(code);
-            localResource.close();
-
+            if (parts[0].equals("images")) {
+                OutputStream outFile = new BufferedOutputStream(new FileOutputStream(app + File.separator + file));
+                outFile.write(Base64.decodeBase64(code));
+                outFile.close();
+            } else {
+                FileWriter localResource = new FileWriter(app + File.separator + file);
+                localResource.write(code);
+                localResource.close();
+            }
             System.out.println("    [success] Creating resource: " + app + File.separator + file);
         }
     }
@@ -152,6 +160,7 @@ public final class Mars {
                                     .method("GET")
                                     .path(app)
                                     .zip(true)
+                                    .apiPart("v1")
                                     .build();
 
         Map<String, String> response = request.execute();
@@ -166,9 +175,15 @@ public final class Mars {
                 dir.mkdir();
             }
 
-            FileWriter localResource = new FileWriter(file);
-            localResource.write(code);
-            localResource.close();
+            if (parts[0].equals("images")) {
+                OutputStream outFile = new BufferedOutputStream(new FileOutputStream(file));
+                outFile.write(Base64.decodeBase64(code));
+                outFile.close();
+            } else {
+                FileWriter localResource = new FileWriter(file);
+                localResource.write(code);
+                localResource.close();
+            }
 
             System.out.println("    [success] Updating resource: " + file);
         }
@@ -179,20 +194,29 @@ public final class Mars {
     ) throws IOException {
 
         String app = FilenameUtils.getName(System.getProperty("user.dir"));
-        String resourcePath = app + resource.substring(1, resource.length());
-
+        String resourcePart = resource.substring(1, resource.length());
+        String resourcePath = app + resourcePart;
+        boolean base64 = resourcePart.startsWith("/images");
+        
         HttpRequest request = new HttpRequestBuilder()
                                     .method("GET")
                                     .path(resourcePath)
+                                    .base64(base64)
                                     .build();
 
         Map<String, String> response = request.execute();
 
         // write file to proper location
         String code = response.get(resource);
-        FileWriter localResource = new FileWriter(resource);
-        localResource.write(code);
-        localResource.close();
+        if (base64) {
+            OutputStream outFile = new BufferedOutputStream(new FileOutputStream(resource));
+            outFile.write(Base64.decodeBase64(code));
+            outFile.close();
+        } else {
+            FileWriter localResource = new FileWriter(resource);
+            localResource.write(code);
+            localResource.close();
+        }
 
         System.out.println("    [success] Updating resource: " + resource);
     }
@@ -425,15 +449,24 @@ public final class Mars {
      */
     static private String read (String fileName) throws IOException {
         StringBuilder text = new StringBuilder();
-        String NL = System.getProperty("line.separator");
-        Scanner scanner = new Scanner(new FileInputStream(fileName), "UTF-8");
-        try {
-            while (scanner.hasNextLine()){
-                text.append(scanner.nextLine() + NL);
+        String[] paths = fileName.split(File.separator);
+        FileInputStream inFile = new FileInputStream(fileName);
+        String dir = paths[paths.length-2];
+        
+        if (dir.equals("images")) {
+            text.append(Base64.encodeBase64String(IOUtils.toByteArray(inFile)));
+        } else {
+            String NL = System.getProperty("line.separator");
+            Scanner scanner = new Scanner(inFile, "UTF-8");
+            try {
+                while (scanner.hasNextLine()) {
+                    text.append(scanner.nextLine() + NL);
+                }
+            } finally {
+                scanner.close();
             }
-        } finally {
-            scanner.close();
         }
+        
         return text.toString();
     }
 

@@ -3,6 +3,7 @@ package co.diji.cloud9.utils.mars;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -18,6 +19,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 
 public class HttpRequest {
@@ -31,6 +33,7 @@ public class HttpRequest {
     private String contentType;
     private int timeout;
     private boolean zip;
+    private boolean base64;
 
     private HttpURLConnection connection;
     private OutputStreamWriter request;
@@ -48,7 +51,8 @@ public class HttpRequest {
         String apiPart,
         String contentType,
         int timeout,
-        boolean zip
+        boolean zip,
+        boolean base64
     ) {
         this.method = method;
         this.path = path;
@@ -59,6 +63,7 @@ public class HttpRequest {
         this.contentType = contentType;
         this.timeout = timeout;
         this.zip = zip;
+        this.base64 = base64;
 	}
 
     public Map<String, String> execute() {
@@ -98,13 +103,18 @@ public class HttpRequest {
         
             //read the result from the server
             if (zip == false) {
-                rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 sb = new StringBuilder();
-
-                while ((line = rd.readLine()) != null) {
-                    sb.append(line + '\n');
+                InputStream in = new BufferedInputStream(connection.getInputStream());
+                
+                if (base64) {
+                    sb.append(Base64.encodeBase64String(IOUtils.toByteArray(in)));
+                } else {
+                    rd = new BufferedReader(new InputStreamReader(in));
+                    while ((line = rd.readLine()) != null) {
+                        sb.append(line + '\n');
+                    }
                 }
-
+                
                 String[] parts = path.split(File.separator);
                 String resource = "./" + parts[1] + File.separator + parts[2];
                 files.put(resource, sb.toString());
@@ -120,7 +130,11 @@ public class HttpRequest {
                     if (entry.isDirectory()) { continue; }
                     String[] pathParts = entry.getName().split(File.separator);
                     String resource = pathParts[1] + File.separator + pathParts[2];
-                    files.put(resource, IOUtils.toString(zip, "UTF-8"));
+                    if (pathParts[1].equals("images")) {
+                        files.put(resource, Base64.encodeBase64String(IOUtils.toByteArray(zip)));
+                    } else {
+                        files.put(resource, IOUtils.toString(zip, "UTF-8"));
+                    }
                 }
             }
 
