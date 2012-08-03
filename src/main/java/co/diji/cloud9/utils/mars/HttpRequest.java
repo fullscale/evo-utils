@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -91,10 +92,12 @@ public class HttpRequest {
             connection.connect();
 
             if (method.equalsIgnoreCase("PUT") || method.equalsIgnoreCase("POST")) {
-                //get the output stream writer and write the output to the server
-                request = new OutputStreamWriter(connection.getOutputStream());
-                request.write(body);
-                request.flush();
+                //get the output stream write the output to the server
+                OutputStream out = connection.getOutputStream();
+
+                // json is utf-8
+                out.write(body.getBytes("UTF-8"));
+                out.flush();
             }
 
             if (connection.getResponseCode() != 200) {
