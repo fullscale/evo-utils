@@ -456,15 +456,7 @@ public final class Mars {
         if (dir.equals("images")) {
             text.append(Base64.encodeBase64String(IOUtils.toByteArray(inFile)));
         } else {
-            String NL = System.getProperty("line.separator");
-            Scanner scanner = new Scanner(inFile, "UTF-8");
-            try {
-                while (scanner.hasNextLine()) {
-                    text.append(scanner.nextLine() + NL);
-                }
-            } finally {
-                scanner.close();
-            }
+            text.append(IOUtils.toString(inFile));
         }
         
         return text.toString();
